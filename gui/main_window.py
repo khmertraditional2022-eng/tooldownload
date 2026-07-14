@@ -92,8 +92,9 @@ class MainWindow(QMainWindow):
         * {
             font-family: "Battambang", "Inter", "Segoe UI", sans-serif;
         }
-        QMainWindow {
+        QMainWindow, QDialog, QMessageBox {
             background-color: #1e1e2e;
+            color: #cdd6f4;
         }
         QLabel {
             color: #cdd6f4;
