@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QUrl
 from PyQt5.QtGui import QDesktopServices
 
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 # Replace this URL with the raw URL to your version.json file on GitHub or Gist.
 # Example: "https://raw.githubusercontent.com/YourName/YourRepo/main/version.json"
 UPDATE_URL = "https://raw.githubusercontent.com/khmertraditional2022-eng/tooldownload/main/version.json"

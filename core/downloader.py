@@ -6,12 +6,21 @@ def clean_filename(title):
     # Remove invalid characters for filenames
     return re.sub(r'[\\/*?:"<>|\n\r\t]', "", title).strip()
 
-def download_episode(url, title, output_dir, progress_callback=None):
+def download_episode(url, title, output_dir, progress_callback=None, yt_mode=0):
     """
     Download video using yt-dlp.
+    yt_mode: 0=Single, 1=Playlist, 2=Audio
     """
     safe_title = clean_filename(title)
-    output_template = os.path.join(output_dir, f"{safe_title}.%(ext)s")
+    
+    if yt_mode == 1:
+        # For playlist, put inside a folder and number them
+        output_template = os.path.join(output_dir, "%(playlist_title)s", "%(playlist_index)s - %(title)s.%(ext)s")
+    else:
+        if "youtube" in url.lower() or "youtu.be" in url.lower():
+            output_template = os.path.join(output_dir, "%(title)s.%(ext)s")
+        else:
+            output_template = os.path.join(output_dir, f"{safe_title}.%(ext)s")
     
     def my_hook(d):
         if d['status'] == 'downloading':
@@ -33,10 +42,22 @@ def download_episode(url, title, output_dir, progress_callback=None):
         'quiet': True,
         'no_warnings': True,
         'progress_hooks': [my_hook],
-        # fallback to generic if extractor fails
         'extract_flat': False,
         'compat_opts': {'no-file-urls'},
     }
+    
+    if yt_mode == 0:
+        ydl_opts['noplaylist'] = True
+    elif yt_mode == 1:
+        ydl_opts['yesplaylist'] = True
+    elif yt_mode == 2:
+        ydl_opts['noplaylist'] = True
+        ydl_opts['format'] = 'bestaudio/best'
+        ydl_opts['postprocessors'] = [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }]
     
     # Check if cookies.txt exists in the app data folder
     cookie_path = os.path.join(os.path.expanduser("~"), ".downloadreel", "cookies.txt")
