@@ -46,6 +46,12 @@ def download_episode(url, title, output_dir, progress_callback=None, yt_mode=0):
         'compat_opts': {'no-file-urls'},
     }
     
+    # Check for local ffmpeg.exe in the current working directory
+    local_ffmpeg = os.path.join(os.getcwd(), "ffmpeg.exe")
+    if os.path.exists(local_ffmpeg):
+        ydl_opts['ffmpeg_location'] = local_ffmpeg
+
+    
     if yt_mode == 0:
         ydl_opts['noplaylist'] = True
     elif yt_mode == 1:
