@@ -3,7 +3,7 @@ import shutil
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QLineEdit, QPushButton, QTableWidget, QTableWidgetItem,
                              QProgressBar, QLabel, QMessageBox, QHeaderView, QAbstractItemView,
-                             QFileDialog)
+                             QFileDialog, QComboBox)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 
 from core.scraper import scrape_episodes
@@ -44,8 +44,10 @@ class DownloadThread(QThread):
                 self.progress.emit(i, 0, "កំពុងទាញយក...")
                 # Download episode
                 download_url = ep.get('stream_url') or ep['url']
+                yt_mode = ep.get('yt_mode', 0)
                 success = download_episode(download_url, ep['title'], self.output_dir, 
-                                 progress_callback=lambda p: self.progress.emit(i, p, "កំពុងទាញយក..."))
+                                 progress_callback=lambda p: self.progress.emit(i, p, "កំពុងទាញយក..."),
+                                 yt_mode=yt_mode)
                 if success:
                     self.progress.emit(i, 100, "ជោគជ័យ")
                 else:
@@ -183,6 +185,29 @@ class MainWindow(QMainWindow):
             background-color: #a6e3a1;
             border-radius: 4px;
         }
+        QComboBox {
+            background-color: #313244;
+            color: #cdd6f4;
+            border: 1px solid #45475a;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        QComboBox::drop-down {
+            border: none;
+            width: 30px;
+        }
+        QComboBox::down-arrow {
+            /* You can add a custom arrow icon here if needed, or leave it blank */
+        }
+        QComboBox QAbstractItemView {
+            background-color: #1e1e2e;
+            color: #cdd6f4;
+            selection-background-color: #89b4fa;
+            selection-color: #11111b;
+            border: 1px solid #45475a;
+            outline: none;
+        }
         """
         self.setStyleSheet(style)
 
@@ -219,12 +244,23 @@ class MainWindow(QMainWindow):
         input_layout = QHBoxLayout()
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText(f"សូមបញ្ចូល Link {self.current_platform} នៅទីនេះ...")
+        
+        self.yt_options = QComboBox()
+        self.yt_options.addItems(["វីដេអូតែមួយ (Single Video)", "Playlist ទាំងមូល (Entire Playlist)", "សំឡេងតែប៉ុណ្ណោះ (Audio Only)"])
+        self.yt_options.hide()
+        
         self.analyze_btn = QPushButton("វិភាគ (Analyze)")
         self.analyze_btn.clicked.connect(self.start_analyze)
         
+        self.yt_download_btn = QPushButton("ទាញយក (Download)")
+        self.yt_download_btn.clicked.connect(self.start_yt_download)
+        self.yt_download_btn.hide()
+        
         input_layout.addWidget(self.input_label)
         input_layout.addWidget(self.url_input)
+        input_layout.addWidget(self.yt_options)
         input_layout.addWidget(self.analyze_btn)
+        input_layout.addWidget(self.yt_download_btn)
         
         layout.addLayout(input_layout)
 
@@ -302,8 +338,49 @@ class MainWindow(QMainWindow):
         self.input_label.setText(f"Link របស់ {platform_name}:")
         self.url_input.setPlaceholderText(f"សូមបញ្ចូល Link {platform_name} នៅទីនេះ...")
         
+        if platform_name == "YouTube":
+            self.analyze_btn.hide()
+            self.yt_options.show()
+            self.yt_download_btn.show()
+        else:
+            self.analyze_btn.show()
+            self.yt_options.hide()
+            self.yt_download_btn.hide()
+        
         for p, btn in self.platform_buttons.items():
             btn.setChecked(p == platform_name)
+
+    def start_yt_download(self):
+        url = self.url_input.text().strip()
+        if not url:
+            QMessageBox.warning(self, "កំហុស", "សូមបញ្ចូល Link ជាមុនសិន!")
+            return
+            
+        self.yt_download_btn.setEnabled(False)
+        self.download_btn.setEnabled(False)
+        self.status_label.setText("កំពុងទាញយកពី YouTube...")
+        
+        self.table.setRowCount(1)
+        self.table.setItem(0, 0, QTableWidgetItem("YouTube Task"))
+        self.table.setItem(0, 1, QTableWidgetItem("កំពុងរៀបចំ..."))
+        progress = QProgressBar()
+        progress.setValue(0)
+        self.table.setCellWidget(0, 2, progress)
+        
+        yt_mode = self.yt_options.currentIndex()
+        self.episodes = [{
+            'title': "YouTube Video",
+            'url': url,
+            'stream_url': None,
+            'platform': 'YouTube',
+            'status': 'Ready',
+            'yt_mode': yt_mode
+        }]
+        
+        self.download_thread = DownloadThread(self.episodes, self.output_dir)
+        self.download_thread.progress.connect(self.update_progress)
+        self.download_thread.finished.connect(self.on_download_finished)
+        self.download_thread.start()
 
     def start_analyze(self):
         url = self.url_input.text().strip()
@@ -365,6 +442,8 @@ class MainWindow(QMainWindow):
 
     def on_download_finished(self):
         self.analyze_btn.setEnabled(True)
+        if hasattr(self, 'yt_download_btn'):
+            self.yt_download_btn.setEnabled(True)
         self.download_btn.setEnabled(True)
         self.status_label.setText("ការទាញយកបានបញ្ចប់!")
         QMessageBox.information(self, "ជោគជ័យ", f"ទាញយកចប់សព្វគ្រប់! វីដេអូរួចរាល់នៅក្នុង Folder:\n{self.output_dir}")
