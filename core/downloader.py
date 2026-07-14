@@ -1,6 +1,7 @@
 import yt_dlp
 import os
 import re
+import shutil
 
 def clean_filename(title):
     # Remove invalid characters for filenames
@@ -37,7 +38,6 @@ def download_episode(url, title, output_dir, progress_callback=None, yt_mode=0):
                 progress_callback(100)
 
     ydl_opts = {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': output_template,
         'quiet': True,
         'no_warnings': True,
@@ -46,17 +46,22 @@ def download_episode(url, title, output_dir, progress_callback=None, yt_mode=0):
         'compat_opts': {'no-file-urls'},
     }
     
-    # Check for local ffmpeg.exe in the current working directory
+    # Check for ffmpeg availability to prevent merge errors on other PCs
     local_ffmpeg = os.path.join(os.getcwd(), "ffmpeg.exe")
+    has_ffmpeg = False
+    
     if os.path.exists(local_ffmpeg):
         ydl_opts['ffmpeg_location'] = local_ffmpeg
+        has_ffmpeg = True
+    elif shutil.which("ffmpeg"):
+        has_ffmpeg = True
 
-    
     if yt_mode == 0:
         ydl_opts['noplaylist'] = True
     elif yt_mode == 1:
         ydl_opts['yesplaylist'] = True
-    elif yt_mode == 2:
+    
+    if yt_mode == 2:
         ydl_opts['noplaylist'] = True
         ydl_opts['format'] = 'bestaudio/best'
         ydl_opts['postprocessors'] = [{
@@ -64,6 +69,11 @@ def download_episode(url, title, output_dir, progress_callback=None, yt_mode=0):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }]
+    elif has_ffmpeg:
+        ydl_opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+    else:
+        # Fallback to pre-merged format if ffmpeg is completely missing
+        ydl_opts['format'] = 'best[ext=mp4]/best'
     
     # Check if cookies.txt exists in the app data folder
     cookie_path = os.path.join(os.path.expanduser("~"), ".downloadreel", "cookies.txt")
