@@ -173,6 +173,34 @@ def scrape_sansekai_dramabox(url):
         
     return episodes
 
+def scrape_youtube(url):
+    import yt_dlp
+    episodes = []
+    ydl_opts = {'quiet': True, 'extract_flat': True}
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            if 'entries' in info:
+                for i, entry in enumerate(info['entries']):
+                    episodes.append({
+                        "title": entry.get('title', f"YouTube Video {i+1}"),
+                        "url": entry.get('url', entry.get('webpage_url', url)),
+                        "stream_url": None,
+                        "platform": "YouTube",
+                        "status": "Ready"
+                    })
+            else:
+                episodes.append({
+                    "title": info.get('title', "YouTube Video"),
+                    "url": url,
+                    "stream_url": None,
+                    "platform": "YouTube",
+                    "status": "Ready"
+                })
+    except Exception as e:
+        print(f"YouTube Scrape Error: {e}")
+    return episodes
+
 def scrape_episodes(url_input, platform="Unknown"):
     """
     Scrape all episodes based on the selected platform.
@@ -195,6 +223,12 @@ def scrape_episodes(url_input, platform="Unknown"):
                 if eps:
                     all_episodes.extend(eps)
                     continue
+                    
+        if platform == "YouTube" or "youtube.com" in url.lower() or "youtu.be" in url.lower():
+            eps = scrape_youtube(url)
+            if eps:
+                all_episodes.extend(eps)
+                continue
                     
         # If no specific scraper works or platform not fully supported, fallback to single generic download
         all_episodes.append({

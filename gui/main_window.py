@@ -199,7 +199,7 @@ class MainWindow(QMainWindow):
         top_bar_layout.addWidget(self.platform_label)
         
         platforms = [
-            "ReelShort", "DramaBox"
+            "ReelShort", "DramaBox", "YouTube"
         ]
         self.platform_buttons = {}
         for p in platforms:
