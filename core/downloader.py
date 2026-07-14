@@ -47,7 +47,13 @@ def download_episode(url, title, output_dir, progress_callback=None, yt_mode=0):
     }
     
     # Check for ffmpeg availability to prevent merge errors on other PCs
-    local_ffmpeg = os.path.join(os.getcwd(), "ffmpeg.exe")
+    import sys
+    if getattr(sys, 'frozen', False):
+        app_dir = os.path.dirname(sys.executable)
+    else:
+        app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        
+    local_ffmpeg = os.path.join(app_dir, "ffmpeg.exe")
     has_ffmpeg = False
     
     if os.path.exists(local_ffmpeg):
@@ -81,7 +87,7 @@ def download_episode(url, title, output_dir, progress_callback=None, yt_mode=0):
         ydl_opts['cookiefile'] = cookie_path
     else:
         # Fallback
-        fallback_cookie = os.path.join(os.getcwd(), "cookies.txt")
+        fallback_cookie = os.path.join(app_dir, "cookies.txt")
         if os.path.exists(fallback_cookie):
             ydl_opts['cookiefile'] = fallback_cookie
 
