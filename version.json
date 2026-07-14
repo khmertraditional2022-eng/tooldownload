@@ -1,5 +1,5 @@
 {
-  "version": "1.0.3",
-  "download_url": "https://github.com/khmertraditional2022-eng/tooldownload/releases/download/1.0.3/ReelDownloader.exe",
-  "release_notes": "ការអាប់ដេតថ្មី v1.0.3: ដោះស្រាយបញ្ហាទាញយកបានតែសំឡេង (គ្មានរូប) និងបន្ថែមប្រព័ន្ធឆ្លាតវៃក្នុងការទាញយកវីដេអូពី YouTube ទោះបីម៉ាស៊ីនគ្មានកម្មវិធី FFmpeg ក៏ដោយ។"
+  "version": "1.0.4",
+  "download_url": "https://github.com/khmertraditional2022-eng/tooldownload/releases/download/v1.0.4/ReelDownloader.exe",
+  "release_notes": "Added Auto Updater & Fixed YouTube Download on other PCs."
 }

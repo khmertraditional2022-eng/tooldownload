@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QMessageBox, QProgressDialog, QApplication
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QDesktopServices
 
-APP_VERSION = "1.0.3"
+APP_VERSION = "1.0.4"
 UPDATE_URL = "https://raw.githubusercontent.com/khmertraditional2022-eng/tooldownload/main/version.json"
 
 def check_for_updates(parent_window):
