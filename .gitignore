@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build files
+build/
+dist/
+*.spec
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Media and downloads
+output/
+*.mp4
+*.mp4.part
+*.mp4.part-*
+*.mp4.ytdl
+*.ts
+
+# Executables
+*.exe
+
+# Test / Output files
+api_responses.txt
+cookies.txt
+book_data.json
+book_rendered.html
+db_next_data.json
+next_data.json
+yt_info.json

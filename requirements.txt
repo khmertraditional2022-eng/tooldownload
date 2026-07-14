@@ -1,0 +1,4 @@
+PyQt5==5.15.9
+requests==2.31.0
+yt-dlp==2023.11.16
+beautifulsoup4==4.12.3
